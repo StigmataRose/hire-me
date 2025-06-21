@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            /* border: 1px solid #ccc; /* For debugging, remove later */ */
+        }
+
+        #reloadButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    </div>
+    <button id="reloadButton">Force Canvas Reload</button>
+
+    <script>
+        var statusElement = document.getElementById("status"); // If you're using this to display status
+        var progressElement = document.getElementById("progress"); // If you're using this
+        var spinnerElement = document.getElementById("spinner"); // If you're using this
+        var canvas = document.getElementById("canvas");
+
+        var gl = null; // Will store our WebGL context
+
+        var Module = {
+            print: (function() { /* ... your print function is fine ... */ })(),
+            canvas: canvas,
+            setStatus: e => { /* ... your setStatus function is fine ... */ },
+            totalDependencies: 0,
+            monitorRunDependencies: e => { /* ... fine ... */ }
+        };
+        window.onerror = () => { /* ... fine ... */ }
+
+        // --- Core WebGL Initialization/Re-initialization Logic ---
+        // This is the function that your Emscripten C/C++ code will ultimately drive.
+        // It should contain calls to exposed C++ functions that rebuild GL resources.
+        function initializeWebGL() {
+            console.log("[JS] initializeWebGL() called: Re-initializing Emscripten GL scene...");
+            // CRITICAL: Call your Emscripten function that re-creates ALL GL resources.
+            // Example: If you have a C++ function `EMSCRIPTEN_KEEPALIVE void setup_my_scene();`
+            if (Module && Module._setup_my_scene) {
+                Module._setup_my_scene();
+            } else {
+                console.error("[JS] Emscripten function '_setup_my_scene' not found! Cannot re-initialize WebGL.");
+            }
+            resizeCanvas(); // Ensure canvas sizing and viewport are correct after init
+        }
+
+        // --- WebGL Context Event Listeners ---
+        canvas.addEventListener("webglcontextlost", (e) => {
+            console.warn("[JS] WebGL context LOST! Preventing default behavior.");
+            e.preventDefault();
+            gl = null; // Invalidate our JS reference to the context
+            // statusElement.textContent = "WebGL context lost. Waiting for restore...";
+        }, false);
+
+        canvas.addEventListener("webglcontextrestored", () => {
+            console.log("[JS] WebGL context RESTORED! Re-initializing...");
+            // Get the new context after restoration (or ensure Emscripten gets it)
+            gl = canvas.getContext('webgl') || canvas.getContext('webgl2');
+            initializeWebGL(); // Trigger full scene re-initialization
+        }, false);
+
+        // --- Dynamic Canvas Resizing ---
+        function resizeCanvas() {
+            // Set canvas's drawing buffer size to match its CSS size
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+
+            // Inform Emscripten code about the new size
+            if (Module && Module._update_viewport_size) {
+                Module._update_viewport_size(canvas.width, canvas.height);
+            } else {
+                console.warn("[JS] Emscripten function '_update_viewport_size' not found. Viewport might not update.");
+            }
+            // console.log(`[JS] Canvas resized to: ${canvas.width}x${canvas.height}`);
+            // If your Emscripten app doesn't have a continuous render loop,
+            // you might need to force a redraw here:
+            // if (Module && Module._render_frame) {
+            //     Module._render_frame();
+            // }
+        }
+
+        // Initial setup when page loads
+        resizeCanvas();
+        gl = canvas.getContext('webgl') || canvas.getContext('webgl2'); // Get context for the first time
+
+        // Add event listener to resize canvas whenever the window size changes
+        window.addEventListener('resize', resizeCanvas);
+
+        // --- Function to Programmatically Force Context Loss/Restore ---
+        function forceCanvasReload() {
+            console.log("[JS] Attempting to force canvas reload (context recreation)...");
+            if (gl) {
+                const loseContextExtension = gl.getExtension('WEBGL_lose_context');
+                if (loseContextExtension) {
+                    // Temporarily pause the main loop if Emscripten uses one, to prevent drawing with a lost context
+                    // if (Module && Module.noExitRuntime && Module._emscripten_cancel_main_loop) {
+                    //     Module._emscripten_cancel_main_loop();
+                    //     console.log("[JS] Emscripten main loop cancelled (temporarily).");
+                    // }
+
+                    loseContextExtension.loseContext(); // Trigger context loss
+                    console.log("[JS] WEBGL_lose_context called (context lost).");
+
+                    // Small delay before restoring is sometimes helpful, though `restoreContext` is async anyway.
+                    setTimeout(() => {
+                        loseContextExtension.restoreContext(); // Request context restoration
+                        console.log("[JS] WEBGL_lose_context restoreContext called.");
+                        // Re-enable main loop if it was cancelled
+                        // if (Module && Module.noExitRuntime && Module._emscripten_set_main_loop) {
+                        //     // This might need arguments, depending on how your main loop is set up
+                        //     Module._emscripten_set_main_loop(Module._render_frame, 0, 1);
+                        //     console.log("[JS] Emscripten main loop resumed.");
+                        // }
+                    }, 50); // Small delay
+                } else {
+                    console.warn("[JS] WEBGL_lose_context extension not available. Cannot programmatically lose/restore. Calling initializeWebGL directly.");
+                    initializeWebGL(); // Fallback: just re-initialize
+                }
+            } else {
+                console.log("[JS] No active WebGL context found. Attempting to re-initialize directly.");
+                initializeWebGL(); // No context to lose, just re-initialize
+            }
+        }
+
+        document.getElementById('reloadButton').addEventListener('click', forceCanvasReload);
+    </script>
+    <script async src="build/web/hire_me_nvidia.js"></script>
+</body>
+</html>
