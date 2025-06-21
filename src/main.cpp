@@ -7,7 +7,35 @@
 #include "visage/graphics.h"
 #include "visage/ui.h"
 
+#include <emscripten.h>
+#include <emscripten/html5.h>
 // No global g_mainCanvas anymore
+
+EM_JS(void, get_canvas_size, (int* width_ptr, int* height_ptr), {
+  const canvas = document.getElementById('canvas');
+  if (canvas) {
+    // For high-DPI displays, we must account for the device pixel ratio.
+    const dpr = window.devicePixelRatio || 1;
+
+    // `clientWidth` and `clientHeight` give the canvas's display size in CSS pixels.
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = canvas.clientHeight;
+
+    // To avoid blurriness, the drawing buffer's size should match the display size
+    // multiplied by the device pixel ratio. This gives the size in physical pixels.
+    const physicalWidth = Math.floor(displayWidth * dpr);
+    const physicalHeight = Math.floor(displayHeight * dpr);
+
+    // Write the physical pixel dimensions back to the C++ pointers.
+    setValue(width_ptr, physicalWidth, 'i32');
+    setValue(height_ptr, physicalHeight, 'i32');
+
+  } else {
+    console.error("Canvas element with id 'canvas' not found.");
+    setValue(width_ptr, 0, 'i32');
+    setValue(height_ptr, 0, 'i32');
+  }
+});
 
 class MyApp {
 public:
@@ -49,7 +77,10 @@ public:
         // Set the main drawing callback for the window
         window_->setDrawCallback([this](double time) {
             // std::cout << "Entering draw callback." << std::endl; // Uncomment for heavy debugging
-            
+                int width = 800;
+    int height = 600;
+            get_canvas_size(&width, &height);
+    std::cout << "Canvas size retrieved: " << width << "x" << height << std::endl;
             if (!mainCanvas_ || !window_) { // Use mainCanvas_ here
                 // std::cerr << "Draw callback: Canvas or Window not valid!" << std::endl;
                 return;
@@ -94,13 +125,23 @@ private:
     // No other members (frames, effects, etc.) are needed for just a background.
 };
 
+
+
+
 // --- Application Entry Point ---
 int main() {
     std::cout << "Visage Application Starting for Web..." << std::endl;
 
+    int width = 800;
+    int height = 600;
+  
+  // Call the function defined in the EM_JS block.
+  // We pass the memory addresses of our width and height variables.
+    get_canvas_size(&width, &height);
+    std::cout << "Canvas size retrieved: " << width << "x" << height << std::endl;
     // Create an instance of MyApp with desired initial window dimensions
     // These will be passed to the MyApp constructor and then to visage::createWindow.
-    MyApp app(800, 600); // Using 400x720 as you provided, but any initial size works.
+    MyApp app(width, height); // Using 400x720 as you provided, but any initial size works.
 
     // Launch the application (shows window and starts the event loop)
     app.launch();

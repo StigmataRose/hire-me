@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten App</title>
+    <style>
+        /* Your CSS is fine, no changes needed here */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000; /* Darker bg */
+        }
+        canvas#canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: 0;
+        }
+        .box{
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+
+    <script>
+        // Get the canvas element
+        var canvas = document.getElementById('canvas');
+
+        // Define the Emscripten Module object
+        var Module = {
+            // Pre-run setup
+            preRun: [],
+            // Post-run setup
+            postRun: [],
+
+            // CHANGE 2: Implement print and printErr to see C++ output
+            print: (function() {
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log("[WASM-STDOUT] " + text);
+                };
+            })(),
+            printErr: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error("[WASM-STDERR] " + text);
+            },
+
+            // Point Emscripten to the canvas on the page
+            canvas: canvas,
+
+            // Optional: Monitor status changes
+            setStatus: function(text) {
+                if (text) {
+                    console.info("[WASM-STATUS] " + text);
+                }
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            }
+        };
+
+        // Initial status message
+        Module.setStatus('Downloading...');
+
+        // General error handler
+        window.onerror = function(event) {
+            Module.setStatus('Exception thrown, see JavaScript console');
+            console.error("Window-level error:", event);
+        };
+    </script>
+
+    <script src="build/web/hire_me_nvidia.js"></script>
+    
+    <script>
+        // This function will be called from an HTML element or other JS code
+        function resizeCppCanvas() {
+            // Check if the runtime is initialized and the function exists
+            if (Module && Module.ccall) {
+                const newWidth = Math.floor(Math.random() * 800) + 200;
+                const newHeight = Math.floor(Math.random() * 600) + 200;
+                
+                console.log(`[JS] Calling C++ function 'canvas_resized' with dimensions ${newWidth}x${newHeight}`);
+
+                try {
+                    // Use ccall to safely call the exported C++ function
+                    Module.ccall(
+                        'canvas_resized',   // C function name
+                        'void',             // Return type
+                        ['number', 'number'],// Argument types
+                        [newWidth, newHeight] // Arguments
+                    );
+                } catch (e) {
+                    console.error("Error calling 'canvas_resized':", e);
+                }
+
+            } else {
+                console.error("Emscripten runtime or 'ccall' is not ready.");
+            }
+        }
+
+        // The best-practice way to know when it's safe to call C++
+        Module.onRuntimeInitialized = function() {
+          console.log("[JS] Emscripten runtime initialized. It's now safe to call C++ functions.");
+          // You could make an initial call here if needed
+          // resizeCppCanvas(); 
+        };
+    </script>
+</body>
+</html>
