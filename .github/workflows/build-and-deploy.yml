@@ -27,28 +27,20 @@ jobs:
       - name: Checkout hire_me repository
         uses: actions/checkout@v4
         with:
-          path: hire_me
+          path: hire_me # Clone your repository into a directory named 'hire_me'
 
       - name: Checkout Visage repository
         uses: actions/checkout@v4
         with:
           repository: VitalAudio/visage
-          path: visage # <--- Keeping this as per your provided YAML
+          path: hire_me/visage # <--- CORRECTED: Use a relative path here. This will clone to ${{ github.workspace }}/hire_me/visage
 
-      - name: List workspace content after checkouts
-        run: |
-          echo "Listing ${{ github.workspace }}:"
-          ls -F "${{ github.workspace }}"/
-          echo "Listing ${{ github.workspace }}/hire_me:"
-          ls -F "${{ github.workspace }}/hire_me"/
-          echo "Listing ${{ github.workspace }}/visage:"
-          ls -F "${{ github.workspace }}/visage"/
-        working-directory: ${{ github.workspace }}
       # --- NEW STEP: Copy Custom Visage CMakeLists.txt and Web Assets ---
       - name: Copy custom CMakeLists.txt and web assets
         run: |
           # Copy custom CMakeLists.txt
-          cp "${{ github.workspace }}/hire_me/CustomVisageCmake/CMakeLists.txt" "${{ github.workspace }}/visage/CMakeLists.txt"
+          # <--- CORRECTED: Update the destination path to reflect where Visage is now cloned.
+          cp "${{ github.workspace }}/hire_me/CustomVisageCmake/CMakeLists.txt" "${{ github.workspace }}/hire_me/visage/CMakeLists.txt"
 
           # Ensure the build directory exists before copying web assets into it
           mkdir -p "${{ github.workspace }}/hire_me/build"
@@ -81,7 +73,9 @@ jobs:
           # You might want to remove this mkdir here if it's already created.
           # Or, ensure it's idempotent. It's fine for `mkdir build` if it exists.
           cd hire_me/build # Navigate into the build directory that already exists
-          cmake -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" ..
+          cmake -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
+                -DVISAGE_SOURCE_DIR="${{ github.workspace }}/hire_me/visage" \ # <--- OPTIONAL but safer to explicitly pass the correct absolute path
+                ..
           make
         working-directory: ${{ github.workspace }} # Changed this working directory to root for hire_me/build access
 
