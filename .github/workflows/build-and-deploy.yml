@@ -1,0 +1,76 @@
+name: Build and Deploy Emscripten Website
+
+on:
+  push:
+    branches:
+      - main # Or your default branch, e.g., 'master'
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # Using Ubuntu for the build environment
+
+    steps:
+      - name: Checkout hire_me repository
+        uses: actions/checkout@v4
+        with:
+          path: hire_me # Clone your repository into a directory named 'hire_me'
+
+    #   - name: Checkout Visage repository
+    #     uses: actions/checkout@v4
+    #     with:
+    #       repository: VitalAudio/visage
+    #       path: visage # Clone Visage into a directory named 'visage'
+
+      - name: Set up Emscripten SDK
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git emsdk
+          cd emsdk
+          ./emsdk install latest
+          ./emsdk activate latest
+        working-directory: ${{ github.workspace }} # Run this from the root of the workspace
+
+      - name: Set up Emscripten Environment
+        # This step is crucial to ensure subsequent steps use the emscripten environment
+        # We'll use a special trick with 'bash -c "source ... && command"'
+        # or by directly setting environment variables.
+        # For simplicity, let's use the full path to emcc for cmake.
+        # Alternatively, we could source the emsdk_env.sh in each step, but that's less efficient.
+
+        run: |
+          echo "EMSDK_PATH=$(pwd)/emsdk" >> $GITHUB_ENV
+          echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
+          echo "$(pwd)/emsdk/node/18.17.1_64bit/bin" >> $GITHUB_PATH # Add Node.js from emsdk to PATH
+
+        working-directory: ${{ github.workspace }}
+
+      - name: Configure and Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
+                -DVISAGE_SOURCE_DIR="${{ github.workspace }}/visage" \
+                ..
+          make
+        working-directory: ${{ github.workspace }}/hire_me # Run this from your 'hire_me' repo
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ github.workspace }}/hire_me/build # The directory containing your built website files
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -12,7 +12,6 @@ build/
 # as it's specific to your local setup and not part of the core project.
 .vscode/
 
-visage/
 # Temporary or local working files:
 # These files appear to be temporary notes or scratchpads. They are usually
 # not part of the final project source code and should be ignored.
