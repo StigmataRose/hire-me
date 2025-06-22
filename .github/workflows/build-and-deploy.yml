@@ -46,8 +46,8 @@ jobs:
           mkdir -p "${{ github.workspace }}/hire_me/build"
 
           # Copy index.html and frame.html to the build directory that will be uploaded
-          cp "${{ github.workspace }}/hire_me/index.html" "${{ github.workspace }}/hire_me/build/web/index.html"
-          cp "${{ github.workspace }}/hire_me/frame.html" "${{ github.workspace }}/hire_me/build/web/frame.html"
+          cp "${{ github.workspace }}/hire_me/index.html" "${{ github.workspace }}/hire_me/build/index.html"
+          cp "${{ github.workspace }}/hire_me/frame.html" "${{ github.workspace }}/hire_me/build/frame.html"
         working-directory: ${{ github.workspace }} # Run from the root to easily access both repos
 
 
@@ -83,7 +83,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3 # Using v3 for stability
         with:
-          path: ${{ github.workspace }}/hire_me/build/web # This path now contains index.html, frame.html, and your build output
+          path: ${{ github.workspace }}/hire_me/build
 
       - name: Deploy to GitHub Pages
         id: deployment
