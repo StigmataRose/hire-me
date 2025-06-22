@@ -14,7 +14,7 @@ set(BGFX_CONFIG_RENDERER_OPENGLES 30 CACHE STRING "Force BGFX to use the OpenGLE
 
 # Add the visage library
 # This creates a build directory at ${CMAKE_BINARY_DIR}/visage_build
-add_subdirectory(/Users/skyler/Desktop/Crank/visage ${CMAKE_BINARY_DIR}/visage_build)
+add_subdirectory(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/visage_build)
 
 # Define our main application executable
 add_executable(hire_me_executable src/main.cpp)

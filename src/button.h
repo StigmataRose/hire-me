@@ -20,9 +20,14 @@ public:
         animated->layout().setMargin(0); // Set margin to 0 for the animated frame
         animated->layout().setWidth(width_); // Set a default width for the animated frame
         animated->layout().setHeight(height_); // Set a default height for the animated frame
+        bloom_.setBloomSize(0.0f);
+        setPostEffect(&bloom_);
 
     }
 
+    void set_bloom(float size) {
+        bloom_.setBloomSize(size);
+    }
     void draw(visage::Canvas& canvas) override {
         // Example: Change color based on mouse state
         // if (is_mouse_down_) {
@@ -85,6 +90,7 @@ public:
     int m_height = 100; // Default height
 private:
 std::unique_ptr<AnimatedFrameLeft> animated;
+visage::BloomPostEffect bloom_;
 };
 
 
@@ -100,8 +106,14 @@ public:
         animated->layout().setWidth(width_); // Set a default width for the animated frame
         animated->layout().setHeight(height_); // Set a default height for the animated frame
 
+        bloom_.setBloomSize(0.0f);
+        setPostEffect(&bloom_);
+
     }
 
+    void set_bloom(float size) {
+        bloom_.setBloomSize(size);
+    }
     void draw(visage::Canvas& canvas) override {
         // Example: Change color based on mouse state
         // if (is_mouse_down_) {
@@ -164,4 +176,5 @@ public:
     int m_height = 100; // Default height
 private:
 std::unique_ptr<AnimatedFrame> animated;
+visage::BloomPostEffect bloom_;
 };

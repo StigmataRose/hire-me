@@ -81,6 +81,26 @@ public:
         simple_frame->layout().setWidth(h_width*1.5f);
         simple_frame->layout().setHeight(h_height*1.5f);
 
+        simple_frame2 = std::make_unique<MySimpleFrame2>(width_, height_);
+        addChild(*simple_frame2.get());
+        simple_frame2->set_frames(h_width*1.5f, h_height*1.5f);
+        simple_frame2->layout().setMarginLeft(h_width*0.25f);
+        simple_frame2->layout().setMarginRight(h_width*0.25f);
+        simple_frame2->layout().setMarginTop(h_height*0.25f);
+        simple_frame2->layout().setMarginBottom(h_height*0.25f);
+        simple_frame2->layout().setWidth(h_width*1.5f);
+        simple_frame2->layout().setHeight(h_height*1.5f);
+
+        simple_frame3 = std::make_unique<MySimpleFrame3>(width_, height_);
+        addChild(*simple_frame3.get());
+        simple_frame3->set_frames(h_width*1.5f, h_height*1.5f);
+        simple_frame3->layout().setMarginLeft(h_width*0.25f);
+        simple_frame3->layout().setMarginRight(h_width*0.25f);
+        simple_frame3->layout().setMarginTop(h_height*0.25f);
+        simple_frame3->layout().setMarginBottom(h_height*0.25f);
+        simple_frame3->layout().setWidth(h_width*1.5f);
+        simple_frame3->layout().setHeight(h_height*1.5f);
+
         startTimer(20);
     }
 
@@ -89,6 +109,8 @@ public:
         // The destructor will automatically clean up children.
         removeChild(&spline_deformation_);
         simple_frame = nullptr; // Reset the unique_ptr to ensure it cleans up.
+        simple_frame2 = nullptr; // Reset the unique_ptr to ensure it cleans up.
+        simple_frame3 = nullptr; // Reset the unique_ptr to ensure it cleans up.
         previous_button = nullptr; // Reset the unique_ptr to ensure it cleans up.
         next_button = nullptr; // Reset the unique_ptr to ensure it cleans up.
     }
@@ -141,8 +163,27 @@ std::cout << "currently getting " << height_ << " " << width_ << std::endl;
     // simple_frame.layout().setMarginBottom(h_height*0.25f);
     // simple_frame.layout().setWidth(h_width);
     // simple_frame.layout().setHeight(h_height);
+
+    switch(viewIndex) {
+        case 0:
+            simple_frame->setVisible(true);
+            simple_frame2->setVisible(false);
+            simple_frame3->setVisible(false);
+            break;
+        case 1:
+            simple_frame->setVisible(false);
+            simple_frame2->setVisible(true);
+            simple_frame3->setVisible(false);
+            break;
+        case 2:
+            simple_frame->setVisible(false);
+            simple_frame2->setVisible(false);
+            simple_frame3->setVisible(true);
+            break;
+        default:
+            break;
     }
-    
+}
     void mouseDown(const visage::MouseEvent& e) override {
         int mouse_x = e.position.x;
         int mouse_y = e.position.y;
@@ -153,8 +194,11 @@ std::cout << "currently getting " << height_ << " " << width_ << std::endl;
         int previous_y_end = previous_y + previous_button->height();
         if(mouse_x > previous_x && mouse_x < previous_x_end &&
            mouse_y > previous_y && mouse_y < previous_y_end) {
-        previous_button->setVisible(!previous_button->isVisible());
+        --viewIndex;
+        if(viewIndex < 0) {
+            viewIndex = 2; // Prevent going below 0
         }
+    }
 
         int next_x = next_button->x();
         int next_y = next_button->y();
@@ -162,16 +206,49 @@ std::cout << "currently getting " << height_ << " " << width_ << std::endl;
         int next_y_end = next_y + next_button->height();
         if(mouse_x > next_x && mouse_x < next_x_end &&
            mouse_y > next_y && mouse_y < next_y_end) {
-        next_button->setVisible(!next_button->isVisible());
+        ++viewIndex;
+        if(viewIndex > 2) {
+            viewIndex = 0; // Prevent going above 2
+           }
+    }
+}
+
+        void mouseMove(const visage::MouseEvent& e) override {
+        int mouse_x = e.position.x;
+        int mouse_y = e.position.y;
+
+        int previous_x = previous_button->x();
+        int previous_y = previous_button->y();
+        int previous_x_end = previous_x + previous_button->width();
+        int previous_y_end = previous_y + previous_button->height();
+        if(mouse_x > previous_x && mouse_x < previous_x_end &&
+           mouse_y > previous_y && mouse_y < previous_y_end) {
+        previous_button->set_bloom(40.0f);
+           }else{
+        previous_button->set_bloom(0.0f);
+           }
+
+        int next_x = next_button->x();
+        int next_y = next_button->y();
+        int next_x_end = next_x + next_button->width();
+        int next_y_end = next_y + next_button->height();
+        if(mouse_x > next_x && mouse_x < next_x_end &&
+           mouse_y > next_y && mouse_y < next_y_end) {
+        next_button->set_bloom(40.0f);
+           }else{
+        next_button->set_bloom(0.0f);
            }
     }
 private:
+    int viewIndex = 0;
     // Our child component.
     SplineDeformation spline_deformation_;
     std::unique_ptr<Button> previous_button; // Example button, can be used later.
     std::unique_ptr<ButtonRight> next_button; // Example button, can be used later.
     int count = 0 ;
     std::unique_ptr<MySimpleFrame> simple_frame; // Example scrollable frame, can be used later.
+    std::unique_ptr<MySimpleFrame2> simple_frame2; // Example scrollable frame, can be used later.
+    std::unique_ptr<MySimpleFrame3> simple_frame3; // Example scrollable frame, can be used later.
 
 };
 
