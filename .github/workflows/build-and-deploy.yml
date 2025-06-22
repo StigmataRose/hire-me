@@ -35,6 +35,9 @@ jobs:
       - name: Replace Visage CMakeLists.txt with custom version
         run: |
           cp "${{ github.workspace }}/hire_me/CustomVisageCmake/CMakeLists.txt" "${{ github.workspace }}/visage/CMakeLists.txt"
+          cp "${{ github.workspace }}/index.html" "${{ github.workspace }}/build/web/index.html"
+          cp "${{ github.workspace }}/frame.html" "${{ github.workspace }}/build/web/frame.html"
+          cp "${{ github.workspace }}/hire_me/CustomVisageCmake/CMakeLists.txt" "${{ github.workspace }}/visage/CMakeLists.txt"
         working-directory: ${{ github.workspace }} # Run from the root to easily access both repos
 
       - name: Set up Emscripten SDK
