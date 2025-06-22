@@ -10,8 +10,9 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ALLOW_MEMORY_GROWTH=1")
 set(BGFX_CONFIG_RENDERER_OPENGLES 30 CACHE STRING "Force BGFX to use the OpenGLES 3.0+ renderer")
 
 # Add the visage library - this is where Visage defines its own include paths
-add_subdirectory(${CMAKE_SOURCE_DIR}/visage ${CMAKE_BINARY_DIR}/visage_build)
+# add_subdirectory(${CMAKE_SOURCE_DIR}/visage ${CMAKE_BINARY_DIR}/visage_build)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/../visage ${CMAKE_BINARY_DIR}/visage_build)
 add_executable(hire_me_executable src/main.cpp)
 
 target_include_directories(hire_me_executable PRIVATE
