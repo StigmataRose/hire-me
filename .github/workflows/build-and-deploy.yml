@@ -19,6 +19,10 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest # Using Ubuntu for the build environment
 
+    environment: # Recommended: Add this for GitHub Pages environment tracking
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Checkout hire_me repository
         uses: actions/checkout@v4
@@ -31,14 +35,20 @@ jobs:
           repository: VitalAudio/visage
           path: visage # Clone Visage into a directory named 'visage'
 
-      # --- NEW STEP: Copy Custom Visage CMakeLists.txt ---
-      - name: Replace Visage CMakeLists.txt with custom version
+      # --- NEW STEP: Copy Custom Visage CMakeLists.txt and Web Assets ---
+      - name: Copy custom CMakeLists.txt and web assets
         run: |
+          # Copy custom CMakeLists.txt
           cp "${{ github.workspace }}/hire_me/CustomVisageCmake/CMakeLists.txt" "${{ github.workspace }}/visage/CMakeLists.txt"
-          cp "${{ github.workspace }}/index.html" "${{ github.workspace }}/build/web/index.html"
-          cp "${{ github.workspace }}/frame.html" "${{ github.workspace }}/build/web/frame.html"
-          cp "${{ github.workspace }}/hire_me/CustomVisageCmake/CMakeLists.txt" "${{ github.workspace }}/visage/CMakeLists.txt"
+
+          # Ensure the build directory exists before copying web assets into it
+          mkdir -p "${{ github.workspace }}/hire_me/build"
+
+          # Copy index.html and frame.html to the build directory that will be uploaded
+          cp "${{ github.workspace }}/hire_me/index.html" "${{ github.workspace }}/hire_me/build/index.html"
+          cp "${{ github.workspace }}/hire_me/frame.html" "${{ github.workspace }}/hire_me/build/frame.html"
         working-directory: ${{ github.workspace }} # Run from the root to easily access both repos
+
 
       - name: Set up Emscripten SDK
         run: |
@@ -58,21 +68,23 @@ jobs:
 
       - name: Configure and Build
         run: |
-          mkdir build
-          cd build
+          # The mkdir build is now handled in the copy step to ensure it exists early
+          # You might want to remove this mkdir here if it's already created.
+          # Or, ensure it's idempotent. It's fine for `mkdir build` if it exists.
+          cd hire_me/build # Navigate into the build directory that already exists
           cmake -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
                 -DVISAGE_SOURCE_DIR="${{ github.workspace }}/visage" \
                 ..
           make
-        working-directory: ${{ github.workspace }}/hire_me
+        working-directory: ${{ github.workspace }} # Changed this working directory to root for hire_me/build access
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-    - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3 # Changed from v4 to v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3 # Using v3 for stability
         with:
-          path: ${{ github.workspace }}/hire_me/build/web
+          path: ${{ github.workspace }}/hire_me/build # This path now contains index.html, frame.html, and your build output
 
       - name: Deploy to GitHub Pages
         id: deployment
