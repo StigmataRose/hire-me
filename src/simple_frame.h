@@ -134,7 +134,7 @@ public:
             // // Draw the smaller font description "hello my name is Skyler crank and I am applying to nvidia"
             visage::Font descFont(static_cast<int>(m_height * 0.03), visage::fonts::Lato_Regular_ttf);
             int descfontHeight = static_cast<int>(m_height * 0.03);
-            canvas.text("11 Years C++ (CMake)", descFont, visage::Font::Justification::kCenter, 0, m_height * 0.2f, width(), descfontHeight);
+            canvas.text("10 Years C++ (CMake)", descFont, visage::Font::Justification::kCenter, 0, m_height * 0.2f, width(), descfontHeight);
 
             // Draw Job ID in bottom-left
             int idFontHeight = static_cast<int>(m_height * 0.03);
@@ -144,7 +144,7 @@ public:
                         // Draw Job ID in bottom-left
             // int idFontHeight = static_cast<int>(m_height * 0.025);
             visage::Font jobIdFont1(idFontHeight, visage::fonts::Lato_Regular_ttf);
-            canvas.text("8 Years Linux (Ubuntu) (Red-Hat)", jobIdFont1, visage::Font::Justification::kCenter, 0, m_height * 0.4f, width(), idFontHeight);
+            canvas.text("7 Years Linux (Ubuntu) (Red-Hat)", jobIdFont1, visage::Font::Justification::kCenter, 0, m_height * 0.4f, width(), idFontHeight);
 
 
         };
