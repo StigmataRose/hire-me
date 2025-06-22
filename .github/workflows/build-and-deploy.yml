@@ -73,7 +73,7 @@ jobs:
           # Or, ensure it's idempotent. It's fine for `mkdir build` if it exists.
           cd hire_me/build # Navigate into the build directory that already exists
           cmake -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" \
-                -DVISAGE_SOURCE_DIR="${{ github.workspace }}/visage" \
+                -DVISAGE_SOURCE_DIR="../../visage" \
                 ..
           make
         working-directory: ${{ github.workspace }} # Changed this working directory to root for hire_me/build access
