@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: VitalAudio/visage
-          path: visage # Clone Visage into a directory named 'visage'
+          path: hire_me/visage # Clone Visage into a directory named 'visage'
 
       # --- NEW STEP: Copy Custom Visage CMakeLists.txt and Web Assets ---
       - name: Copy custom CMakeLists.txt and web assets
@@ -45,8 +45,8 @@ jobs:
           mkdir -p "${{ github.workspace }}/hire_me/build"
 
           # Copy index.html and frame.html to the build directory that will be uploaded
-          cp "${{ github.workspace }}/hire_me/index.html" "${{ github.workspace }}/hire_me/build/index.html"
-          cp "${{ github.workspace }}/hire_me/frame.html" "${{ github.workspace }}/hire_me/build/frame.html"
+          cp "${{ github.workspace }}/hire_me/index.html" "${{ github.workspace }}/hire_me/build/web/index.html"
+          cp "${{ github.workspace }}/hire_me/frame.html" "${{ github.workspace }}/hire_me/build/web/frame.html"
         working-directory: ${{ github.workspace }} # Run from the root to easily access both repos
 
 
