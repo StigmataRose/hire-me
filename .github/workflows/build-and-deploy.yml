@@ -27,14 +27,23 @@ jobs:
       - name: Checkout hire_me repository
         uses: actions/checkout@v4
         with:
-          path: hire_me # Clone your repository into a directory named 'hire_me'
+          path: hire_me
 
       - name: Checkout Visage repository
         uses: actions/checkout@v4
         with:
           repository: VitalAudio/visage
-          path: hire_me/visage # Clone Visage into a directory named 'visage'
+          path: visage # <--- Keeping this as per your provided YAML
 
+      - name: List workspace content after checkouts
+        run: |
+          echo "Listing ${{ github.workspace }}:"
+          ls -F "${{ github.workspace }}"/
+          echo "Listing ${{ github.workspace }}/hire_me:"
+          ls -F "${{ github.workspace }}/hire_me"/
+          echo "Listing ${{ github.workspace }}/visage:"
+          ls -F "${{ github.workspace }}/visage"/
+        working-directory: ${{ github.workspace }}
       # --- NEW STEP: Copy Custom Visage CMakeLists.txt and Web Assets ---
       - name: Copy custom CMakeLists.txt and web assets
         run: |
@@ -45,8 +54,8 @@ jobs:
           mkdir -p "${{ github.workspace }}/hire_me/build"
 
           # Copy index.html and frame.html to the build directory that will be uploaded
-          cp "${{ github.workspace }}/hire_me/index.html" "${{ github.workspace }}/hire_me/build/web/index.html"
-          cp "${{ github.workspace }}/hire_me/frame.html" "${{ github.workspace }}/hire_me/build/web/frame.html"
+          cp "${{ github.workspace }}/hire_me/index.html" "${{ github.workspace }}/hire_me/build/index.html"
+          cp "${{ github.workspace }}/hire_me/frame.html" "${{ github.workspace }}/hire_me/build/frame.html"
         working-directory: ${{ github.workspace }} # Run from the root to easily access both repos
 
 
