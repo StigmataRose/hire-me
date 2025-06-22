@@ -34,6 +34,8 @@ target_include_directories(hire_me_executable PRIVATE
     # which in turn contains fonts.h
     # This path is relative to your current build directory (${CMAKE_BINARY_DIR}).
     ${CMAKE_BINARY_DIR}/visage_build/visage_graphics/VisageEmbeddedFonts_generated
+    ${CMAKE_BINARY_DIR}/visage_build/visage_graphics/VisageEmbeddedShaders_generated
+    ${CMAKE_BINARY_DIR}/visage_build/visage_graphics/VisageEmbeddedIcons_generated
 )
 
 # Define the base name and output directory
