@@ -69,10 +69,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+    - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3 # Changed from v4 to v3
         with:
-          path: ${{ github.workspace }}/hire_me/build
+          path: ${{ github.workspace }}/hire_me/build/web
 
       - name: Deploy to GitHub Pages
         id: deployment
