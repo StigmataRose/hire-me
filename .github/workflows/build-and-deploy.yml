@@ -25,11 +25,17 @@ jobs:
         with:
           path: hire_me # Clone your repository into a directory named 'hire_me'
 
-    #   - name: Checkout Visage repository
-    #     uses: actions/checkout@v4
-    #     with:
-    #       repository: VitalAudio/visage
-    #       path: visage # Clone Visage into a directory named 'visage'
+      - name: Checkout Visage repository
+        uses: actions/checkout@v4
+        with:
+          repository: VitalAudio/visage
+          path: visage # Clone Visage into a directory named 'visage'
+
+      # --- NEW STEP: Copy Custom Visage CMakeLists.txt ---
+      - name: Replace Visage CMakeLists.txt with custom version
+        run: |
+          cp "${{ github.workspace }}/hire_me/CustomVisageCmake/CMakeLists.txt" "${{ github.workspace }}/visage/CMakeLists.txt"
+        working-directory: ${{ github.workspace }} # Run from the root to easily access both repos
 
       - name: Set up Emscripten SDK
         run: |
@@ -37,19 +43,13 @@ jobs:
           cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
-        working-directory: ${{ github.workspace }} # Run this from the root of the workspace
+        working-directory: ${{ github.workspace }}
 
       - name: Set up Emscripten Environment
-        # This step is crucial to ensure subsequent steps use the emscripten environment
-        # We'll use a special trick with 'bash -c "source ... && command"'
-        # or by directly setting environment variables.
-        # For simplicity, let's use the full path to emcc for cmake.
-        # Alternatively, we could source the emsdk_env.sh in each step, but that's less efficient.
-
         run: |
           echo "EMSDK_PATH=$(pwd)/emsdk" >> $GITHUB_ENV
           echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
-          echo "$(pwd)/emsdk/node/18.17.1_64bit/bin" >> $GITHUB_PATH # Add Node.js from emsdk to PATH
+          echo "$(pwd)/emsdk/node/18.17.1_64bit/bin" >> $GITHUB_PATH
 
         working-directory: ${{ github.workspace }}
 
@@ -61,7 +61,7 @@ jobs:
                 -DVISAGE_SOURCE_DIR="${{ github.workspace }}/visage" \
                 ..
           make
-        working-directory: ${{ github.workspace }}/hire_me # Run this from your 'hire_me' repo
+        working-directory: ${{ github.workspace }}/hire_me
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -69,7 +69,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ${{ github.workspace }}/hire_me/build # The directory containing your built website files
+          path: ${{ github.workspace }}/hire_me/build
 
       - name: Deploy to GitHub Pages
         id: deployment
