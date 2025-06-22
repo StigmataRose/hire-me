@@ -24,7 +24,7 @@ target_include_directories(hire_me_executable PRIVATE
 
 set_target_properties(hire_me_executable PROPERTIES
     RUNTIME_OUTPUT_NAME "hire_me_nvidia"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" # WASM output directory
 )
 
 target_link_libraries(hire_me_executable PRIVATE

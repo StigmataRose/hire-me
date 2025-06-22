@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make WASM</title>
+    <title>WASM</title>
     <style>
         body, html {
             margin: 0;
@@ -11,11 +11,62 @@
             height: 100%;
             overflow: hidden; /* Prevents scrollbars on the main page */
             background-color: black;
+            font-family: sans-serif; /* A nice default font */
         }
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            /* Add transition for smooth blur effect */
+            transition: filter 0.3s ease-in-out;
+        }
+        /* Class to apply blur to the iframe */
+        iframe.blurred {
+            filter: blur(8px); /* Adjust blur strength as needed */
+        }
+
+        /* Styles for the orientation notice */
+        .orientation-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Make background more transparent to see blurred content */
+            background-color: rgba(0, 0, 0, 0.6); /* Slightly less opaque black */
+            color: white;
+            display: flex; /* Use flexbox for centering content */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box; /* Include padding in the element's total width and height */
+            z-index: 1000; /* Ensure it's on top of other content */
+            flex-direction: column; /* Stack text vertically */
+            /* --- IMPORTANT CHANGE HERE --- */
+            opacity: 0; /* Initially hidden */
+            visibility: hidden; /* Initially hidden */
+            /* --- IMPORTANT CHANGE ENDS --- */
+            transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+        }
+        .orientation-notice.visible { /* Add this class for when it should be visible */
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto; /* Enable interactions when visible */
+        }
+        .orientation-notice.hidden { /* Keeping this for consistency, though 'visible' handles show/hide */
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .orientation-notice p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .orientation-notice strong {
+            font-size: 1.5em;
+            display: block; /* Make it a block element for better spacing */
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -23,23 +74,49 @@
 
     <iframe id="myIframe" src="frame.html"></iframe>
 
+    <div id="orientationNotice" class="orientation-notice">
+        <div>
+            <p><strong>Please Rotate Your Device!</strong></p>
+            <p>For the best viewing experience, please rotate your phone to landscape mode or view this page on a desktop computer.</p>
+        </div>
+    </div>
+
     <script>
-        // A function to handle the reloading of the iframe
-        function reloadIframe() {
-            const iframe = document.getElementById('myIframe');
-            // Setting the src to its own value is a common and effective
-            // way to force a reload of the iframe's content.
-            iframe.src = iframe.src;
+        const orientationNotice = document.getElementById('orientationNotice');
+        const myIframe = document.getElementById('myIframe');
+
+        function checkOrientation() {
+            if (window.innerWidth < window.innerHeight) {
+                // Portrait mode: show the notice and blur the iframe
+                orientationNotice.classList.add('visible'); // Use 'visible' to show
+                orientationNotice.classList.remove('hidden'); // Ensure 'hidden' is removed
+                myIframe.classList.add('blurred'); // Add blur class to iframe
+            } else {
+                // Landscape mode or desktop: hide the notice and unblur the iframe
+                orientationNotice.classList.remove('visible'); // Use 'visible' to hide
+                orientationNotice.classList.add('hidden'); // Ensure 'hidden' is added
+                myIframe.classList.remove('blurred'); // Remove blur class from iframe
+            }
         }
 
-        // We use a timeout to prevent the reload function from firing too rapidly
-        // during a continuous resize, which can be inefficient.
+        document.addEventListener('DOMContentLoaded', function() {
+            checkOrientation(); // Initial check when the DOM is loaded
+        });
+
         let resizeTimeout;
         window.addEventListener('resize', function() {
-            // Clear the previous timeout to reset the timer
             clearTimeout(resizeTimeout);
-            // Set a new timeout
-            resizeTimeout = setTimeout(reloadIframe, 250); // Reload after 250ms of no resizing
+            resizeTimeout = setTimeout(checkOrientation, 250); // Check after 250ms of no resizing
+        });
+
+        function reloadIframe() {
+            myIframe.src = myIframe.src;
+        }
+
+        let iframeReloadTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(iframeReloadTimeout);
+            iframeReloadTimeout = setTimeout(reloadIframe, 250);
         });
     </script>
 
