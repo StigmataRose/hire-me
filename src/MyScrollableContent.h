@@ -2,6 +2,8 @@
 
 #include "visage/ui.h"
 #include "visage/graphics.h"
+#include "embedded/fonts.h"
+
 class MyScrollableContent : public visage::ScrollableFrame {
 public:
     static constexpr int kNumFrames = 10;
@@ -50,7 +52,7 @@ public:
             frame.onDraw() = [this, &frame, frame_color](visage::Canvas& canvas) {
                 canvas.setColor(frame_color);
                 canvas.roundedRectangle(0, 0, frame.width(), frame.height(), 16);
-                visage::Font myFont(16, resources::fonts::Lato_Regular_ttf);
+                visage::Font myFont(16, visage::fonts::Lato_Regular_ttf);
 
                 canvas.setColor(0xffffffff);
                 //canvas.roundedRectangle(0, 0, frame.width(), frame.height(), 16);
@@ -74,4 +76,5 @@ public:
 private:
     bool m_content_created = false;
     Frame frames_[kNumFrames];
+    visage::Text text_;
 };
