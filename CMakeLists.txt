@@ -27,6 +27,7 @@ set_target_properties(hire_me_executable PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/web"
 )
 
+
 # Link against required libraries.
 target_link_libraries(hire_me_executable PRIVATE
     visage
