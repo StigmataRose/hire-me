@@ -33,14 +33,14 @@ public:
 
 
         // Draw the guide lines connecting the points in white
-        drawLines(canvas, 0xffffffff, points, MAX_POINTS);   // Changed to white (0xffffffff)
+        drawLines(canvas, 0xff000000, points, MAX_POINTS);   // Changed to white (0xffffffff)
 
         // Draw the spline in a common "NVIDIA green" color with 2.5 width
         // A common hex for NVIDIA green is around #76B900
         drawSpline(canvas, 0xff76b900, points, 3.5f); // Changed to NVIDIA green (0xff76b900)
 
                 // Draw the points in white
-        drawPoints(canvas, 0xffffffff, points, MAX_POINTS); // Changed to white (0xffffffff)
+        drawPoints(canvas, 0xff000000, points, MAX_POINTS); // Changed to white (0xffffffff)
 
         redraw();
     }

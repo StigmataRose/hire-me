@@ -16,6 +16,7 @@
 
 #include "MyScrollableContent.h"
 #include "simple_frame.h"
+#include "NeuralNetVisage.h"
 
 EM_JS(void, get_canvas_size, (int* width_ptr, int* height_ptr), {
   const canvas = document.getElementById('canvas');
@@ -49,8 +50,46 @@ public:
         int width_ = 800;
         int height_ = 600;
         get_canvas_size(&width_, &height_);
-        spline_deformation_.layout().setHeight(height_*1.5f);
-        spline_deformation_.layout().setWidth(width_*1.5f);
+        spline_deformation_.layout().setHeight(height_);
+        spline_deformation_.layout().setWidth(width_);
+        spline_deformation_.layout().setMarginLeft(0);
+        
+
+        circle_ = std::make_unique<AnimatedCircle>();
+        addChild(*circle_.get());
+        circle_->layout().setMarginLeft(width_ * 0.25f);
+        circle_->layout().setMarginRight(width_ * 0.25f);
+        circle_->layout().setMarginTop(height_ * 0.4f);
+        circle_->layout().setMarginBottom(height_ * 0.25f);
+        circle_->layout().setWidth(width_ * 0.5f);
+        circle_->layout().setHeight(height_ * 0.5f);
+
+        shards = std::make_unique<RotatingShardsAnimation>();
+        addChild(*shards.get());
+        shards->layout().setMarginLeft(width_ * 0.3f);
+        shards->layout().setMarginRight(width_ * 0.3f);
+        shards->layout().setMarginTop(height_ * 0.45f);
+        shards->layout().setMarginBottom(height_ * 0.25f);
+        shards->layout().setWidth(width_ * 0.4f);
+        shards->layout().setHeight(height_ * 0.4f);
+
+        cosmic = std::make_unique<CosmicPulsarAnimation>();
+        addChild(*cosmic.get());
+        cosmic->layout().setMarginLeft(width_ * 0.25f);
+        cosmic->layout().setMarginRight(width_ * 0.25f);
+        cosmic->layout().setMarginTop(height_ * 0.4f);
+        cosmic->layout().setMarginBottom(height_ * 0.25f);
+        cosmic->layout().setWidth(width_ * 0.5f);
+        cosmic->layout().setHeight(height_ * 0.5f);
+
+        kings = std::make_unique<SplineDeformation>();
+        addChild(*kings.get());
+        kings->layout().setMarginLeft(width_ * 0.25f);
+        kings->layout().setMarginRight(width_ * 0.25f);
+        kings->layout().setMarginTop(height_ * 0.4f);
+        kings->layout().setMarginBottom(height_ * 0.25f);
+        kings->layout().setWidth(width_ * 0.5f);
+        kings->layout().setHeight(height_ * 0.5f);
 
         int button_size = width_ * 0.10f; // Set button size to 15% of the width.
         previous_button = std::make_unique<Button>(button_size, button_size);
@@ -68,7 +107,7 @@ public:
         // Set its width and height
         next_button->layout().setWidth(button_size);
         next_button->layout().setHeight(button_size);
-    
+
         float h_width = width_ * 0.5f;
         float h_height = height_ * 0.5f;
         simple_frame = std::make_unique<MySimpleFrame>(width_, height_);
@@ -81,6 +120,16 @@ public:
         simple_frame->layout().setWidth(h_width*1.5f);
         simple_frame->layout().setHeight(h_height*1.5f);
 
+        simple_frame1 = std::make_unique<MySimpleFrame1>(width_, height_);
+        addChild(*simple_frame1.get());
+        simple_frame1->set_frames(h_width*1.5f, h_height*1.5f);
+        simple_frame1->layout().setMarginLeft(h_width*0.25f);
+        simple_frame1->layout().setMarginRight(h_width*0.25f);
+        simple_frame1->layout().setMarginTop(h_height*0.25f);
+        simple_frame1->layout().setMarginBottom(h_height*0.25f);
+        simple_frame1->layout().setWidth(h_width*1.5f);
+        simple_frame1->layout().setHeight(h_height*1.5f);
+
         simple_frame2 = std::make_unique<MySimpleFrame2>(width_, height_);
         addChild(*simple_frame2.get());
         simple_frame2->set_frames(h_width*1.5f, h_height*1.5f);
@@ -90,6 +139,7 @@ public:
         simple_frame2->layout().setMarginBottom(h_height*0.25f);
         simple_frame2->layout().setWidth(h_width*1.5f);
         simple_frame2->layout().setHeight(h_height*1.5f);
+
 
         simple_frame3 = std::make_unique<MySimpleFrame3>(width_, height_);
         addChild(*simple_frame3.get());
@@ -101,6 +151,11 @@ public:
         simple_frame3->layout().setWidth(h_width*1.5f);
         simple_frame3->layout().setHeight(h_height*1.5f);
 
+        border = std::make_unique<AnimatedBorder>();
+        addChild(*border.get());
+        border->layout().setMarginLeft(0);
+        border->layout().setWidth(width_);
+        border->layout().setHeight(height_);
         startTimer(20);
     }
 
@@ -113,13 +168,18 @@ public:
         simple_frame3 = nullptr; // Reset the unique_ptr to ensure it cleans up.
         previous_button = nullptr; // Reset the unique_ptr to ensure it cleans up.
         next_button = nullptr; // Reset the unique_ptr to ensure it cleans up.
+        border = nullptr;
+        circle_ = nullptr; // Reset the unique_ptr to ensure it cleans up.
+        shards = nullptr;
+        cosmic = nullptr;
+        kings = nullptr;
     }
 
     // This is the CORRECT way to provide drawing logic for a Frame subclass.
     // We override the virtual 'draw' method from the base class.
     void draw(visage::Canvas& canvas) override {
 
-        canvas.setColor(0xff000000);
+        canvas.setColor(0xff101214);
         
         // Fill the entire area of this frame (which is the whole window).
         canvas.fill(0, 0, width(), height());
@@ -137,11 +197,11 @@ public:
         //     // removeChild(&spline_deformation_);
         //     // redraw();
         // }
-    int width_ = 800;
-    int height_ = 600;
-    get_canvas_size(&width_, &height_);
-    spline_deformation_.layout().setHeight(height_*1.5f);
-    spline_deformation_.layout().setWidth(width_*1.5f);
+    // int width_ = 800;
+    // int height_ = 600;
+    // get_canvas_size(&width_, &height_);
+    // spline_deformation_.layout().setHeight(height_*1.5f);
+    // spline_deformation_.layout().setWidth(width_*1.5f);
 
         // float h_width = width_ * 0.5f;
         // float h_height = height_ * 0.5f;
@@ -154,7 +214,7 @@ public:
         // simple_frame->layout().setMarginBottom(h_height*0.25f);
         // simple_frame->layout().setWidth(h_width*1.5f);
         // simple_frame->layout().setHeight(h_height*1.5f);
-std::cout << "currently getting " << height_ << " " << width_ << std::endl;
+//std::cout << "currently getting " << height_ << " " << width_ << std::endl;
     // float h_width = width * 0.25f;
     // float h_height = height * 0.25f;
     // simple_frame.layout().setMarginLeft(h_width*0.25f);
@@ -167,22 +227,50 @@ std::cout << "currently getting " << height_ << " " << width_ << std::endl;
     switch(viewIndex) {
         case 0:
             simple_frame->setVisible(true);
+            circle_->setVisible(true);
+            shards->setVisible(false);
+            cosmic->setVisible(false);
+            kings->setVisible(false);
+            simple_frame1->setVisible(false);
             simple_frame2->setVisible(false);
             simple_frame3->setVisible(false);
             break;
         case 1:
             simple_frame->setVisible(false);
-            simple_frame2->setVisible(true);
+            circle_->setVisible(false);
+            shards->setVisible(true);
+            cosmic->setVisible(false);
+            kings->setVisible(false);
+            simple_frame1->setVisible(true);
+            simple_frame2->setVisible(false);
             simple_frame3->setVisible(false);
             break;
         case 2:
             simple_frame->setVisible(false);
+            circle_->setVisible(false);
+            shards->setVisible(false);
+            cosmic->setVisible(true);
+            kings->setVisible(false);
+            simple_frame1->setVisible(false);
+            simple_frame2->setVisible(true);
+            simple_frame3->setVisible(false);
+            break;
+        case 3:
+            simple_frame->setVisible(false);
+            circle_->setVisible(false);
+            shards->setVisible(false);
+            cosmic->setVisible(false);
+            kings->setVisible(true);
+            simple_frame1->setVisible(false);
             simple_frame2->setVisible(false);
             simple_frame3->setVisible(true);
             break;
         default:
             break;
     }
+
+
+
 }
     void mouseDown(const visage::MouseEvent& e) override {
         int mouse_x = e.position.x;
@@ -196,7 +284,11 @@ std::cout << "currently getting " << height_ << " " << width_ << std::endl;
            mouse_y > previous_y && mouse_y < previous_y_end) {
         --viewIndex;
         if(viewIndex < 0) {
-            viewIndex = 2; // Prevent going below 0
+            viewIndex = 3; // Prevent going below 0
+        }
+        if (viewIndex == 3){
+
+            //show_contact_modal();
         }
     }
 
@@ -207,9 +299,13 @@ std::cout << "currently getting " << height_ << " " << width_ << std::endl;
         if(mouse_x > next_x && mouse_x < next_x_end &&
            mouse_y > next_y && mouse_y < next_y_end) {
         ++viewIndex;
-        if(viewIndex > 2) {
+        if(viewIndex > 3) {
             viewIndex = 0; // Prevent going above 2
            }
+        if (viewIndex == 3){
+
+            //show_contact_modal();
+        }
     }
 }
 
@@ -240,16 +336,22 @@ std::cout << "currently getting " << height_ << " " << width_ << std::endl;
            }
     }
 private:
+    int last_view = 0;
     int viewIndex = 0;
     // Our child component.
-    SplineDeformation spline_deformation_;
+    NeuralNetVisage spline_deformation_;
     std::unique_ptr<Button> previous_button; // Example button, can be used later.
     std::unique_ptr<ButtonRight> next_button; // Example button, can be used later.
     int count = 0 ;
     std::unique_ptr<MySimpleFrame> simple_frame; // Example scrollable frame, can be used later.
+    std::unique_ptr<MySimpleFrame1> simple_frame1; // Example scrollable frame, can be used later.
     std::unique_ptr<MySimpleFrame2> simple_frame2; // Example scrollable frame, can be used later.
     std::unique_ptr<MySimpleFrame3> simple_frame3; // Example scrollable frame, can be used later.
-
+    std::unique_ptr<AnimatedBorder> border;
+    std::unique_ptr<AnimatedCircle> circle_; // Current frame being displayed.
+    std::unique_ptr<RotatingShardsAnimation> shards;
+    std::unique_ptr<CosmicPulsarAnimation> cosmic; // Example animated frame, can be used later.
+    std::unique_ptr<SplineDeformation> kings; // Current frame being displayed.
 };
 
 
